@@ -6,6 +6,7 @@ from enum import Enum
 class DataSource(str, Enum):
     ZERODHA = "zerodha"
     UPSTOX = "upstox"
+    DHAN = "dhan"
     TWELVE_DATA = "twelve_data"
     FRED = "fred"
 

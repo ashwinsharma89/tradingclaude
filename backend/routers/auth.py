@@ -54,3 +54,11 @@ async def upstox_callback(code: str = Query(...)):
             token_data = resp.json()
             return {"status": "success", "access_token": token_data.get("access_token", "")}
         return {"status": "error", "message": resp.text}
+
+
+@router.get("/dhan/status")
+async def dhan_status():
+    """Check if Dhan access token is configured."""
+    settings = get_settings()
+    has_token = bool(settings.DHAN_ACCESS_TOKEN and settings.DHAN_ACCESS_TOKEN != "your_dhan_access_token")
+    return {"authenticated": has_token, "source": "dhan"}

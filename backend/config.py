@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     UPSTOX_REDIRECT_URI: str = "http://localhost:8000/auth/upstox/callback"
     UPSTOX_ACCESS_TOKEN: str = ""
 
+    # Dhan
+    DHAN_CLIENT_ID: str = ""
+    DHAN_ACCESS_TOKEN: str = ""
+
     # External APIs
     TWELVE_DATA_API_KEY: str = ""
     FRED_API_KEY: str = ""
@@ -23,8 +27,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     CACHE_TTL_SECONDS: int = 900
 
-    # Data source
-    INDIAN_DATA_SOURCE: str = "zerodha"
+    # Data source — set to "zerodha", "upstox", or "dhan"
+    INDIAN_DATA_SOURCE: str = "dhan"
 
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./ratio_app.db"

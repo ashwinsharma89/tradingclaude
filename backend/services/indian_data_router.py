@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 
 from config import get_settings
-from services import zerodha_service, upstox_service
+from services import zerodha_service, upstox_service, dhan_service
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,25 @@ def _map_interval_for_upstox(interval: str) -> str:
     return mapping.get(interval, interval)
 
 
+async def _fetch_from_source(source: str, symbol: str, interval: str, from_date: str, to_date: str) -> pd.DataFrame:
+    """Fetch historical candles from a specific source."""
+    if source == "dhan":
+        return await dhan_service.get_historical_candles(symbol, interval, from_date, to_date)
+    elif source == "zerodha":
+        token = await zerodha_service.resolve_token(symbol)
+        return await zerodha_service.get_historical_candles(token, interval, from_date, to_date)
+    else:  # upstox
+        upstox_key = _to_upstox_key(symbol)
+        mapped_interval = _map_interval_for_upstox(interval)
+        return await upstox_service.get_historical_candles(upstox_key, mapped_interval, from_date, to_date)
+
+
+def _get_fallback_source(primary: str) -> str:
+    """Return a fallback source different from primary."""
+    fallbacks = {"dhan": "zerodha", "zerodha": "upstox", "upstox": "zerodha"}
+    return fallbacks.get(primary, "zerodha")
+
+
 async def get_historical_candles(
     symbol: str,
     interval: str,
@@ -62,38 +81,32 @@ async def get_historical_candles(
     source = settings.INDIAN_DATA_SOURCE
 
     try:
-        if source == "zerodha":
-            token = await zerodha_service.resolve_token(symbol)
-            df = await zerodha_service.get_historical_candles(token, interval, from_date, to_date)
-            _fallback_used = False
-            return df
-        else:
-            upstox_key = _to_upstox_key(symbol)
-            mapped_interval = _map_interval_for_upstox(interval)
-            return await upstox_service.get_historical_candles(upstox_key, mapped_interval, from_date, to_date)
+        df = await _fetch_from_source(source, symbol, interval, from_date, to_date)
+        _fallback_used = False
+        return df
     except Exception as e:
-        logger.warning("Primary source %s failed for %s: %s. Falling back.", source, symbol, e)
+        fallback = _get_fallback_source(source)
+        logger.warning("Primary source %s failed for %s: %s. Falling back to %s.", source, symbol, e, fallback)
         _fallback_used = True
-        if source == "zerodha":
-            upstox_key = _to_upstox_key(symbol)
-            mapped_interval = _map_interval_for_upstox(interval)
-            return await upstox_service.get_historical_candles(upstox_key, mapped_interval, from_date, to_date)
-        else:
-            token = await zerodha_service.resolve_token(symbol)
-            return await zerodha_service.get_historical_candles(token, interval, from_date, to_date)
+        return await _fetch_from_source(fallback, symbol, interval, from_date, to_date)
+
+
+async def _search_from_source(source: str, query: str) -> list[dict]:
+    """Search instruments from a specific source."""
+    if source == "dhan":
+        return await dhan_service.search_instruments(query)
+    elif source == "zerodha":
+        return await zerodha_service.search_instruments(query)
+    else:
+        return await upstox_service.search_instruments(query)
 
 
 async def search_instruments(query: str) -> list[dict]:
     settings = get_settings()
     source = settings.INDIAN_DATA_SOURCE
     try:
-        if source == "zerodha":
-            return await zerodha_service.search_instruments(query)
-        else:
-            return await upstox_service.search_instruments(query)
+        return await _search_from_source(source, query)
     except Exception as e:
-        logger.warning("Primary search failed (%s), trying fallback: %s", source, e)
-        if source == "zerodha":
-            return await upstox_service.search_instruments(query)
-        else:
-            return await zerodha_service.search_instruments(query)
+        fallback = _get_fallback_source(source)
+        logger.warning("Primary search failed (%s), trying fallback %s: %s", source, fallback, e)
+        return await _search_from_source(fallback, query)

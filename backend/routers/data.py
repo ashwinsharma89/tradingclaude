@@ -8,20 +8,20 @@ from services import indian_data_router, twelve_data_service, fred_service
 router = APIRouter(prefix="/api", tags=["data"])
 
 POPULAR_INSTRUMENTS = [
-    PopularInstrument(key="NSE:NIFTY 50", name="Nifty 50", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY BANK", name="Bank Nifty", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY IT", name="Nifty IT", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY PHARMA", name="Nifty Pharma", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY SMLCAP 100", name="Nifty Smallcap 100", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY AUTO", name="Nifty Auto", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY FMCG", name="Nifty FMCG", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY METAL", name="Nifty Metal", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY REALTY", name="Nifty Realty", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:NIFTY ENERGY", name="Nifty Energy", source=DataSource.ZERODHA, category="Indian Indices"),
-    PopularInstrument(key="NSE:RELIANCE", name="Reliance Industries", source=DataSource.ZERODHA, category="Indian Stocks"),
-    PopularInstrument(key="NSE:TCS", name="TCS", source=DataSource.ZERODHA, category="Indian Stocks"),
-    PopularInstrument(key="NSE:HDFCBANK", name="HDFC Bank", source=DataSource.ZERODHA, category="Indian Stocks"),
-    PopularInstrument(key="NSE:INFY", name="Infosys", source=DataSource.ZERODHA, category="Indian Stocks"),
+    PopularInstrument(key="NSE:NIFTY 50", name="Nifty 50", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY BANK", name="Bank Nifty", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY IT", name="Nifty IT", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY PHARMA", name="Nifty Pharma", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY SMLCAP 100", name="Nifty Smallcap 100", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY AUTO", name="Nifty Auto", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY FMCG", name="Nifty FMCG", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY METAL", name="Nifty Metal", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY REALTY", name="Nifty Realty", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:NIFTY ENERGY", name="Nifty Energy", source=DataSource.DHAN, category="Indian Indices"),
+    PopularInstrument(key="NSE:RELIANCE", name="Reliance Industries", source=DataSource.DHAN, category="Indian Stocks"),
+    PopularInstrument(key="NSE:TCS", name="TCS", source=DataSource.DHAN, category="Indian Stocks"),
+    PopularInstrument(key="NSE:HDFCBANK", name="HDFC Bank", source=DataSource.DHAN, category="Indian Stocks"),
+    PopularInstrument(key="NSE:INFY", name="Infosys", source=DataSource.DHAN, category="Indian Stocks"),
     PopularInstrument(key="XAU/USD", name="Gold (XAU/USD)", source=DataSource.TWELVE_DATA, category="Commodities"),
     PopularInstrument(key="XAG/USD", name="Silver (XAG/USD)", source=DataSource.TWELVE_DATA, category="Commodities"),
     PopularInstrument(key="WTI", name="Crude Oil WTI", source=DataSource.TWELVE_DATA, category="Commodities"),
@@ -65,7 +65,7 @@ async def get_price_data(
     to_date = datetime.now().strftime("%Y-%m-%d")
     from_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
 
-    if source in (DataSource.ZERODHA, DataSource.UPSTOX):
+    if source in (DataSource.ZERODHA, DataSource.UPSTOX, DataSource.DHAN):
         df = await indian_data_router.get_historical_candles(instrument_key, interval, from_date, to_date)
     elif source == DataSource.TWELVE_DATA:
         df = await twelve_data_service.get_time_series(instrument_key, interval, outputsize=min(days, 1000))
