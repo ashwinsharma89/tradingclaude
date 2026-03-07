@@ -50,13 +50,13 @@ export default function SectorHeatmap() {
 
   useEffect(() => {
     async function loadSectorData() {
-      const nifty: AssetRef = { source: "zerodha", key: "NSE:NIFTY 50" };
+      const nifty: AssetRef = { source: "dhan", key: "NSE:NIFTY 50" };
       const updated = [...sectors];
 
       for (let i = 0; i < SECTORS.length; i++) {
         try {
           const sector: AssetRef = {
-            source: "zerodha",
+            source: "dhan",
             key: SECTORS[i].symbol,
           };
           const data = await calculateRatio(sector, nifty, "1Y");

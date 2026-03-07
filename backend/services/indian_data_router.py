@@ -3,7 +3,8 @@ import logging
 import pandas as pd
 
 from config import get_settings
-from services import zerodha_service, upstox_service, dhan_service
+from services import upstox_service, dhan_service
+from services.sample_data import get_sample_candles, get_sample_instruments
 
 logger = logging.getLogger(__name__)
 
@@ -55,9 +56,6 @@ async def _fetch_from_source(source: str, symbol: str, interval: str, from_date:
     """Fetch historical candles from a specific source."""
     if source == "dhan":
         return await dhan_service.get_historical_candles(symbol, interval, from_date, to_date)
-    elif source == "zerodha":
-        token = await zerodha_service.resolve_token(symbol)
-        return await zerodha_service.get_historical_candles(token, interval, from_date, to_date)
     else:  # upstox
         upstox_key = _to_upstox_key(symbol)
         mapped_interval = _map_interval_for_upstox(interval)
@@ -66,8 +64,8 @@ async def _fetch_from_source(source: str, symbol: str, interval: str, from_date:
 
 def _get_fallback_source(primary: str) -> str:
     """Return a fallback source different from primary."""
-    fallbacks = {"dhan": "zerodha", "zerodha": "upstox", "upstox": "zerodha"}
-    return fallbacks.get(primary, "zerodha")
+    fallbacks = {"dhan": "upstox", "upstox": "dhan"}
+    return fallbacks.get(primary, "upstox")
 
 
 async def get_historical_candles(
@@ -87,16 +85,22 @@ async def get_historical_candles(
     except Exception as e:
         fallback = _get_fallback_source(source)
         logger.warning("Primary source %s failed for %s: %s. Falling back to %s.", source, symbol, e, fallback)
-        _fallback_used = True
-        return await _fetch_from_source(fallback, symbol, interval, from_date, to_date)
+        try:
+            _fallback_used = True
+            return await _fetch_from_source(fallback, symbol, interval, from_date, to_date)
+        except Exception as e2:
+            logger.warning("Fallback %s also failed for %s: %s. Using sample data.", fallback, symbol, e2)
+            _fallback_used = True
+            df = get_sample_candles(symbol, from_date, to_date)
+            if not df.empty:
+                logger.info("Serving sample data for %s (%d rows)", symbol, len(df))
+            return df
 
 
 async def _search_from_source(source: str, query: str) -> list[dict]:
     """Search instruments from a specific source."""
     if source == "dhan":
         return await dhan_service.search_instruments(query)
-    elif source == "zerodha":
-        return await zerodha_service.search_instruments(query)
     else:
         return await upstox_service.search_instruments(query)
 
@@ -109,4 +113,8 @@ async def search_instruments(query: str) -> list[dict]:
     except Exception as e:
         fallback = _get_fallback_source(source)
         logger.warning("Primary search failed (%s), trying fallback %s: %s", source, fallback, e)
-        return await _search_from_source(fallback, query)
+        try:
+            return await _search_from_source(fallback, query)
+        except Exception as e2:
+            logger.warning("Fallback search also failed: %s. Using sample data.", e2)
+            return get_sample_instruments(query)

@@ -3,12 +3,6 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Zerodha Kite Connect
-    ZERODHA_API_KEY: str = ""
-    ZERODHA_API_SECRET: str = ""
-    ZERODHA_ACCESS_TOKEN: str = ""
-    ZERODHA_REQUEST_TOKEN: str = ""
-
     # Upstox
     UPSTOX_CLIENT_ID: str = ""
     UPSTOX_CLIENT_SECRET: str = ""
@@ -27,7 +21,7 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379"
     CACHE_TTL_SECONDS: int = 900
 
-    # Data source — set to "zerodha", "upstox", or "dhan"
+    # Data source — set to "upstox" or "dhan"
     INDIAN_DATA_SOURCE: str = "dhan"
 
     # Database

@@ -41,8 +41,8 @@ interface AppState {
   // Data source status
   fallbackActive: boolean;
   setFallbackActive: (active: boolean) => void;
-  zerodhaAuthenticated: boolean;
-  setZerodhaAuthenticated: (auth: boolean) => void;
+  dhanAuthenticated: boolean;
+  setDhanAuthenticated: (auth: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -81,6 +81,6 @@ export const useAppStore = create<AppState>((set) => ({
 
   fallbackActive: false,
   setFallbackActive: (active) => set({ fallbackActive: active }),
-  zerodhaAuthenticated: false,
-  setZerodhaAuthenticated: (auth) => set({ zerodhaAuthenticated: auth }),
+  dhanAuthenticated: false,
+  setDhanAuthenticated: (auth) => set({ dhanAuthenticated: auth }),
 }));

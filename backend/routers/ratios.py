@@ -27,7 +27,7 @@ async def _fetch_series(source: DataSource, key: str, days: int):
     to_date = datetime.now().strftime("%Y-%m-%d")
     from_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
 
-    if source in (DataSource.ZERODHA, DataSource.UPSTOX, DataSource.DHAN):
+    if source in (DataSource.UPSTOX, DataSource.DHAN):
         df = await indian_data_router.get_historical_candles(key, "day", from_date, to_date)
     elif source == DataSource.TWELVE_DATA:
         df = await twelve_data_service.get_time_series(key, "1day", outputsize=min(days, 1000))

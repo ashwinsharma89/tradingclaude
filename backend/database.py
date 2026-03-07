@@ -28,14 +28,14 @@ CREATE TABLE IF NOT EXISTS alerts (
 """
 
 DEFAULT_RATIOS = [
-    ("Nifty / Gold", "NSE:NIFTY 50", "zerodha", "XAU/USD", "twelve_data"),
-    ("Nifty / M2 (US)", "NSE:NIFTY 50", "zerodha", "M2SL", "fred"),
-    ("Bank Nifty / Nifty", "NSE:NIFTY BANK", "zerodha", "NSE:NIFTY 50", "zerodha"),
-    ("Nifty IT / Nifty", "NSE:NIFTY IT", "zerodha", "NSE:NIFTY 50", "zerodha"),
-    ("Nifty Smallcap / Nifty", "NSE:NIFTY SMLCAP 100", "zerodha", "NSE:NIFTY 50", "zerodha"),
+    ("Nifty / Gold", "NSE:NIFTY 50", "dhan", "XAU/USD", "twelve_data"),
+    ("Nifty / M2 (US)", "NSE:NIFTY 50", "dhan", "M2SL", "fred"),
+    ("Bank Nifty / Nifty", "NSE:NIFTY BANK", "dhan", "NSE:NIFTY 50", "dhan"),
+    ("Nifty IT / Nifty", "NSE:NIFTY IT", "dhan", "NSE:NIFTY 50", "dhan"),
+    ("Nifty Smallcap / Nifty", "NSE:NIFTY SMLCAP 100", "dhan", "NSE:NIFTY 50", "dhan"),
     ("Crude Oil / Gold", "WTI", "twelve_data", "XAU/USD", "twelve_data"),
-    ("USD/INR / Nifty", "USD/INR", "twelve_data", "NSE:NIFTY 50", "zerodha"),
-    ("Nifty Pharma / Nifty", "NSE:NIFTY PHARMA", "zerodha", "NSE:NIFTY 50", "zerodha"),
+    ("USD/INR / Nifty", "USD/INR", "twelve_data", "NSE:NIFTY 50", "dhan"),
+    ("Nifty Pharma / Nifty", "NSE:NIFTY PHARMA", "dhan", "NSE:NIFTY 50", "dhan"),
 ]
 
 

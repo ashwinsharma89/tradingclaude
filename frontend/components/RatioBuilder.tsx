@@ -11,7 +11,7 @@ import {
 import type { AssetRef, InstrumentResult, PopularInstrument } from "@/lib/api";
 
 const SOURCE_OPTIONS = [
-  { value: "zerodha", label: "Indian (Zerodha)" },
+  { value: "dhan", label: "Indian (Dhan)" },
   { value: "upstox", label: "Indian (Upstox)" },
   { value: "twelve_data", label: "Global / Commodities" },
   { value: "fred", label: "FRED (M2 Supply)" },
@@ -25,7 +25,7 @@ interface AssetPickerProps {
 }
 
 function AssetPicker({ label, asset, onSelect, popular }: AssetPickerProps) {
-  const [source, setSource] = useState<string>("zerodha");
+  const [source, setSource] = useState<string>("dhan");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<InstrumentResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -64,7 +64,7 @@ function AssetPicker({ label, asset, onSelect, popular }: AssetPickerProps) {
 
   const handleSelectResult = (result: InstrumentResult) => {
     const key =
-      result.source === "zerodha" || result.source === "upstox"
+      result.source === "dhan" || result.source === "upstox" || result.source === "sample"
         ? `NSE:${result.tradingsymbol}`
         : result.tradingsymbol;
     onSelect({ source: result.source as AssetRef["source"], key });

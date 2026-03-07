@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback } from "react";
 import { useAppStore } from "@/lib/store";
-import { getWatchlist, getZerodhaStatus, calculateRatio, getAlerts } from "@/lib/api";
+import { getWatchlist, getDhanStatus, calculateRatio, getAlerts } from "@/lib/api";
 import type { AssetRef, WatchlistItem } from "@/lib/api";
 import Watchlist from "@/components/Watchlist";
 import RatioChart from "@/components/RatioChart";
@@ -28,8 +28,8 @@ export default function Dashboard() {
     toggleRsi,
     fallbackActive,
     setFallbackActive,
-    zerodhaAuthenticated,
-    setZerodhaAuthenticated,
+    dhanAuthenticated,
+    setDhanAuthenticated,
     setAlerts,
   } = useAppStore();
 
@@ -38,11 +38,11 @@ export default function Dashboard() {
       try {
         const [wl, status, alertList] = await Promise.all([
           getWatchlist(),
-          getZerodhaStatus().catch(() => ({ authenticated: false })),
+          getDhanStatus().catch(() => ({ authenticated: false })),
           getAlerts().catch(() => []),
         ]);
         setWatchlist(wl);
-        setZerodhaAuthenticated(status.authenticated);
+        setDhanAuthenticated(status.authenticated);
         setAlerts(alertList);
 
         if (wl.length > 0 && !selectedWatchlistId) {
@@ -110,13 +110,10 @@ export default function Dashboard() {
               Using fallback data source
             </span>
           )}
-          {!zerodhaAuthenticated && (
-            <a
-              href="http://localhost:8000/auth/zerodha/login"
-              className="text-xs px-3 py-1 rounded bg-accent-red/20 text-accent-red hover:bg-accent-red/30 transition"
-            >
-              Re-authenticate with Zerodha
-            </a>
+          {!dhanAuthenticated && (
+            <span className="text-xs px-3 py-1 rounded bg-accent-yellow/20 text-accent-yellow">
+              Dhan token not configured
+            </span>
           )}
           {chartData && <SignalBadge signal={chartData.signal} />}
         </div>

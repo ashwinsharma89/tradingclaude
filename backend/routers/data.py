@@ -58,14 +58,14 @@ async def popular_instruments():
 @router.get("/price/{instrument_key:path}")
 async def get_price_data(
     instrument_key: str,
-    source: DataSource = DataSource.ZERODHA,
+    source: DataSource = DataSource.DHAN,
     interval: str = "day",
     days: int = 365,
 ):
     to_date = datetime.now().strftime("%Y-%m-%d")
     from_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
 
-    if source in (DataSource.ZERODHA, DataSource.UPSTOX, DataSource.DHAN):
+    if source in (DataSource.UPSTOX, DataSource.DHAN):
         df = await indian_data_router.get_historical_candles(instrument_key, interval, from_date, to_date)
     elif source == DataSource.TWELVE_DATA:
         df = await twelve_data_service.get_time_series(instrument_key, interval, outputsize=min(days, 1000))

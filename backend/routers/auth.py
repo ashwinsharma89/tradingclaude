@@ -1,36 +1,8 @@
 from fastapi import APIRouter, Query
-from fastapi.responses import RedirectResponse
 
 from config import get_settings
-from services import zerodha_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-
-@router.get("/zerodha/login")
-async def zerodha_login():
-    settings = get_settings()
-    login_url = f"https://kite.trade/connect/login?api_key={settings.ZERODHA_API_KEY}&v=3"
-    return RedirectResponse(url=login_url)
-
-
-@router.get("/zerodha/callback")
-async def zerodha_callback(request_token: str = Query(...)):
-    try:
-        data = await zerodha_service.generate_session(request_token)
-        return {
-            "status": "success",
-            "message": "Zerodha authentication successful. Token stored.",
-            "user": data.get("user_name", ""),
-        }
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
-
-@router.get("/zerodha/status")
-async def zerodha_status():
-    authenticated = await zerodha_service.is_authenticated()
-    return {"authenticated": authenticated}
 
 
 @router.get("/upstox/callback")

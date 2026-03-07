@@ -6,7 +6,7 @@ const api = axios.create({
 });
 
 export interface AssetRef {
-  source: "zerodha" | "upstox" | "twelve_data" | "fred";
+  source: "dhan" | "upstox" | "twelve_data" | "fred";
   key: string;
 }
 
@@ -128,8 +128,8 @@ export async function deleteAlert(id: number): Promise<void> {
   await api.delete(`/api/alerts/${id}`);
 }
 
-export async function getZerodhaStatus(): Promise<{ authenticated: boolean }> {
-  const { data } = await api.get("/auth/zerodha/status");
+export async function getDhanStatus(): Promise<{ authenticated: boolean }> {
+  const { data } = await api.get("/auth/dhan/status");
   return data;
 }
 
