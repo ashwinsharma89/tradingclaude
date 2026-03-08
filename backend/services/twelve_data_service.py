@@ -29,6 +29,9 @@ SYMBOL_MAP = {
 
 
 def _resolve_symbol(symbol: str) -> str:
+    # Strip exchange prefix (e.g., "GLOBAL:XAU/USD" -> "XAU/USD")
+    if ":" in symbol:
+        symbol = symbol.split(":", 1)[1]
     return SYMBOL_MAP.get(symbol.upper(), symbol)
 
 
@@ -71,9 +74,13 @@ async def get_time_series(
         resp.raise_for_status()
         data = resp.json()
 
+    if data.get("status") == "error" or data.get("code"):
+        logger.error("Twelve Data API error for %s: %s", resolved, data.get("message", data))
+        return pd.DataFrame()
+
     values = data.get("values", [])
     if not values:
-        logger.warning("No data returned from Twelve Data for %s", resolved)
+        logger.warning("No data returned from Twelve Data for %s (response: %s)", resolved, str(data)[:200])
         return pd.DataFrame()
 
     df = pd.DataFrame(values)
