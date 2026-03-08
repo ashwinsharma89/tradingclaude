@@ -1,5 +1,7 @@
 import logging
+import os
 
+import aiosqlite
 import httpx
 import pandas as pd
 
@@ -9,6 +11,9 @@ from cache.redis_cache import cache_get_json, cache_set_json
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.twelvedata.com"
+
+# Path to pre-populated market data DB (set via env or default)
+MARKET_DATA_DB = os.getenv("MARKET_DATA_DB", "market_data.db")
 
 # Symbol reference
 SYMBOL_MAP = {
@@ -47,6 +52,39 @@ def _map_interval(interval: str) -> str:
     return mapping.get(interval, interval)
 
 
+async def _query_local_db(symbol: str, interval: str, outputsize: int) -> pd.DataFrame:
+    """Try to load data from the local market_data.db file."""
+    if not os.path.exists(MARKET_DATA_DB):
+        return pd.DataFrame()
+
+    try:
+        async with aiosqlite.connect(MARKET_DATA_DB) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute(
+                "SELECT date, open, high, low, close, volume FROM market_data "
+                "WHERE symbol = ? AND interval = ? "
+                "ORDER BY date DESC LIMIT ?",
+                (symbol, interval, outputsize),
+            )
+            rows = await cursor.fetchall()
+
+        if not rows:
+            return pd.DataFrame()
+
+        df = pd.DataFrame([dict(r) for r in rows])
+        for col in ["open", "high", "low", "close"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+        if "volume" in df.columns:
+            df["volume"] = pd.to_numeric(df["volume"], errors="coerce")
+        df = df.sort_values("date").reset_index(drop=True)
+        logger.info("Loaded %d rows from local DB for %s", len(df), symbol)
+        return df
+    except Exception as e:
+        logger.warning("Local DB query failed for %s: %s", symbol, e)
+        return pd.DataFrame()
+
+
 async def get_time_series(
     symbol: str,
     interval: str = "1day",
@@ -60,7 +98,18 @@ async def get_time_series(
     if cached:
         return pd.DataFrame(cached)
 
+    # Try local market_data.db first
+    local_df = await _query_local_db(resolved, mapped_interval, outputsize)
+    if not local_df.empty:
+        await cache_set_json(cache_key, local_df.to_dict(orient="records"), ttl=900)
+        return local_df
+
+    # Fall back to Twelve Data API
     settings = get_settings()
+    if not settings.TWELVE_DATA_API_KEY or settings.TWELVE_DATA_API_KEY in ("", "your_key"):
+        logger.warning("No valid Twelve Data API key configured and no local data for %s", resolved)
+        return pd.DataFrame()
+
     params = {
         "symbol": resolved,
         "interval": mapped_interval,
