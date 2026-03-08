@@ -81,6 +81,7 @@ async def search_instruments(query: str) -> list[dict]:
             "exchange": "FRED",
             "instrument_type": item["category"],
             "source": "fred",
+            "sector": item.get("category", "Economics"),
         }
         for item in available
         if query_upper in item["key"].upper() or query_upper in item["name"].upper()

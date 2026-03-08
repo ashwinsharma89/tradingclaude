@@ -50,6 +50,7 @@ export interface InstrumentResult {
   exchange: string;
   instrument_type: string;
   source: string;
+  sector?: string;
 }
 
 export interface PopularInstrument {

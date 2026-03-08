@@ -7,6 +7,7 @@ import pandas as pd
 
 from config import get_settings
 from cache.redis_cache import cache_get_json, cache_set_json
+from services.sample_data import get_sector
 
 logger = logging.getLogger(__name__)
 
@@ -250,6 +251,7 @@ async def search_instruments(query: str) -> list[dict]:
                 "exchange": inst.get("exchange", "NSE"),
                 "instrument_type": inst.get("instrument", "EQUITY"),
                 "source": "dhan",
+                "sector": get_sector(inst["symbol"]),
             })
         if len(results) >= 20:
             break

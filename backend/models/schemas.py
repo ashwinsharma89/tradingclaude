@@ -74,6 +74,7 @@ class InstrumentResult(BaseModel):
     exchange: str
     instrument_type: str
     source: DataSource
+    sector: Optional[str] = None
 
 
 class PopularInstrument(BaseModel):

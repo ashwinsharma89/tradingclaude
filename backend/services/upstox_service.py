@@ -6,6 +6,7 @@ import pandas as pd
 
 from config import get_settings
 from cache.redis_cache import cache_get_json, cache_set_json
+from services.sample_data import get_sector
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,7 @@ async def search_instruments(query: str) -> list[dict]:
                 "exchange": inst.get("exchange", "NSE"),
                 "instrument_type": inst.get("instrument_type", "EQ"),
                 "source": "upstox",
+                "sector": get_sector(inst.get("trading_symbol", inst.get("name", ""))),
             })
         return results
     except Exception as e:

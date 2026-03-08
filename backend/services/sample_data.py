@@ -11,143 +11,163 @@ import random
 import pandas as pd
 from datetime import datetime, timedelta
 
-# Known NSE stocks with realistic base prices and avg daily volumes
-_KNOWN_STOCKS: dict[str, tuple[float, int]] = {
-    # Large-cap
-    "RELIANCE": (2950, 8500000),
-    "TCS": (3850, 5000000),
-    "HDFCBANK": (1650, 12000000),
-    "INFY": (1870, 8000000),
-    "ICICIBANK": (1250, 15000000),
-    "HINDUNILVR": (2450, 3500000),
-    "SBIN": (780, 25000000),
-    "BHARTIARTL": (1680, 6000000),
-    "ITC": (465, 18000000),
-    "KOTAKBANK": (1780, 4500000),
-    "LT": (3520, 3000000),
-    "AXISBANK": (1120, 14000000),
-    "ASIANPAINT": (2800, 2500000),
-    "MARUTI": (12500, 1200000),
-    "TITAN": (3450, 2800000),
-    "SUNPHARMA": (1780, 5500000),
-    "BAJFINANCE": (6800, 4000000),
-    "BAJFINSV": (1620, 1800000),
-    "WIPRO": (480, 10000000),
-    "HCLTECH": (1750, 4200000),
-    "ULTRACEMCO": (11200, 800000),
-    "NESTLEIND": (2350, 600000),
-    "POWERGRID": (310, 16000000),
-    "NTPC": (365, 20000000),
-    "ONGC": (265, 18000000),
-    "TATAMOTORS": (780, 22000000),
-    "TATASTEEL": (145, 30000000),
-    "JSWSTEEL": (890, 8000000),
-    "ADANIENT": (2450, 10000000),
-    "ADANIPORTS": (1350, 7000000),
-    "M&M": (2950, 4500000),
-    "TECHM": (1620, 5000000),
-    "DRREDDY": (1250, 2000000),
-    "CIPLA": (1480, 3500000),
-    "DIVISLAB": (4200, 1500000),
-    "APOLLOHOSP": (6800, 1200000),
-    "EICHERMOT": (4600, 1000000),
-    "GRASIM": (2650, 2200000),
-    "INDUSINDBK": (1050, 8000000),
-    "BPCL": (310, 12000000),
-    "COALINDIA": (480, 15000000),
-    "HEROMOTOCO": (4500, 1800000),
-    "BRITANNIA": (5200, 1200000),
-    "PIDILITIND": (2900, 1500000),
-    "DABUR": (540, 5000000),
-    "GODREJCP": (1280, 2000000),
-    "HAVELLS": (1650, 2500000),
-    "SIEMENS": (7200, 500000),
-    "ABB": (7800, 600000),
-    "TRENT": (6500, 3000000),
-    "ZOMATO": (245, 35000000),
-    "PAYTM": (850, 12000000),
-    "NYKAA": (175, 8000000),
-    "DMART": (3800, 1500000),
-    "IRCTC": (880, 5000000),
-    "PERSISTENT": (5500, 800000),
-    "LTIM": (5800, 1200000),
-    "COFORGE": (7200, 600000),
-    "MPHASIS": (2800, 1000000),
-    "TATAELXSI": (6500, 500000),
-    "POLYCAB": (6800, 700000),
-    "DIXON": (14500, 400000),
-    "BALKRISIND": (2800, 800000),
-    "TATAPOWER": (420, 20000000),
-    "ADANIGREEN": (1750, 5000000),
-    "VEDL": (440, 18000000),
-    "HINDALCO": (620, 12000000),
-    "BANKBARODA": (245, 25000000),
-    "PNB": (105, 35000000),
-    "CANBK": (98, 30000000),
-    "IDFCFIRSTB": (72, 28000000),
-    "YESBANK": (22, 80000000),
-    "IDEA": (8, 120000000),
-    "SAIL": (118, 22000000),
-    "NMDC": (225, 10000000),
-    "RECLTD": (520, 8000000),
-    "PFC": (430, 9000000),
-    "IRFC": (165, 25000000),
-    "HAL": (4200, 3000000),
-    "BEL": (285, 15000000),
-    "BHEL": (245, 20000000),
-    "SBILIFE": (1650, 3000000),
-    "HDFCLIFE": (680, 5000000),
-    "ICICIPRULI": (680, 4000000),
-    "BAJAJHLDNG": (8500, 200000),
-    "MUTHOOTFIN": (1950, 2000000),
-    "CHOLAFIN": (1350, 3000000),
-    "SHRIRAMFIN": (2800, 2000000),
-    "LICI": (920, 8000000),
-    "JIOFIN": (340, 12000000),
-    "BIOCON": (340, 6000000),
-    "LUPIN": (2100, 3000000),
-    "AUROPHARMA": (1250, 4000000),
-    "TORNTPHARM": (3200, 800000),
-    "ALKEM": (5200, 500000),
-    "GLENMARK": (1520, 2000000),
-    "MAXHEALTH": (920, 2500000),
-    "FORTIS": (580, 3500000),
-    "PAGEIND": (42000, 100000),
-    "TATACOMM": (1800, 1000000),
-    "TATACHEM": (1080, 3000000),
-    "TATACONSUM": (920, 4000000),
-    "VOLTAS": (1750, 2000000),
-    "CROMPTON": (380, 5000000),
-    "WHIRLPOOL": (1350, 800000),
-    "BATAINDIA": (1380, 1500000),
-    "RELAXO": (780, 1200000),
-    "RAYMOND": (1650, 1500000),
-    "PRESTIGE": (1800, 1000000),
-    "DLF": (850, 8000000),
-    "GODREJPROP": (2800, 1200000),
-    "OBEROIRLTY": (1950, 800000),
-    "PHOENIXLTD": (1650, 600000),
-    "SUNTV": (680, 3000000),
-    "ZEEL": (135, 12000000),
-    "PVR": (1450, 1500000),
-    "INDIGO": (4500, 3000000),
-    "CONCOR": (780, 5000000),
-    "PIIND": (3800, 800000),
-    "UPL": (520, 6000000),
-    "SRF": (2450, 1200000),
-    "ATUL": (6500, 300000),
-    "DEEPAKNTR": (2200, 1500000),
-    "NAVINFLUOR": (3500, 600000),
-    "ASTRAL": (1950, 1200000),
-    "SUPREMEIND": (5200, 400000),
-    "APLAPOLLO": (1650, 800000),
-    "CUMMINSIND": (3200, 600000),
-    "THERMAX": (4800, 300000),
-    "KAYNES": (5500, 500000),
-    "COCHINSHIP": (1800, 3000000),
-    "MAZAGONDOCK": (4200, 1500000),
-    "GRSE": (1650, 2000000),
-    "GARDENREACH": (1250, 1200000),
+# Known NSE stocks: ticker -> (base_price, avg_volume, sector)
+_KNOWN_STOCKS: dict[str, tuple[float, int, str]] = {
+    # Oil & Gas
+    "RELIANCE": (2950, 8500000, "Oil & Gas"),
+    "ONGC": (265, 18000000, "Oil & Gas"),
+    "BPCL": (310, 12000000, "Oil & Gas"),
+    "ADANIGREEN": (1750, 5000000, "Oil & Gas"),
+    # IT
+    "TCS": (3850, 5000000, "IT"),
+    "INFY": (1870, 8000000, "IT"),
+    "WIPRO": (480, 10000000, "IT"),
+    "HCLTECH": (1750, 4200000, "IT"),
+    "TECHM": (1620, 5000000, "IT"),
+    "LTIM": (5800, 1200000, "IT"),
+    "PERSISTENT": (5500, 800000, "IT"),
+    "COFORGE": (7200, 600000, "IT"),
+    "MPHASIS": (2800, 1000000, "IT"),
+    "TATAELXSI": (6500, 500000, "IT"),
+    # Banking
+    "HDFCBANK": (1650, 12000000, "Banking"),
+    "ICICIBANK": (1250, 15000000, "Banking"),
+    "SBIN": (780, 25000000, "Banking"),
+    "KOTAKBANK": (1780, 4500000, "Banking"),
+    "AXISBANK": (1120, 14000000, "Banking"),
+    "INDUSINDBK": (1050, 8000000, "Banking"),
+    "BANKBARODA": (245, 25000000, "Banking"),
+    "PNB": (105, 35000000, "Banking"),
+    "CANBK": (98, 30000000, "Banking"),
+    "IDFCFIRSTB": (72, 28000000, "Banking"),
+    "YESBANK": (22, 80000000, "Banking"),
+    # FMCG
+    "HINDUNILVR": (2450, 3500000, "FMCG"),
+    "ITC": (465, 18000000, "FMCG"),
+    "NESTLEIND": (2350, 600000, "FMCG"),
+    "BRITANNIA": (5200, 1200000, "FMCG"),
+    "DABUR": (540, 5000000, "FMCG"),
+    "GODREJCP": (1280, 2000000, "FMCG"),
+    "TATACONSUM": (920, 4000000, "FMCG"),
+    # Telecom
+    "BHARTIARTL": (1680, 6000000, "Telecom"),
+    "IDEA": (8, 120000000, "Telecom"),
+    "TATACOMM": (1800, 1000000, "Telecom"),
+    # Auto
+    "MARUTI": (12500, 1200000, "Auto"),
+    "TATAMOTORS": (780, 22000000, "Auto"),
+    "M&M": (2950, 4500000, "Auto"),
+    "EICHERMOT": (4600, 1000000, "Auto"),
+    "HEROMOTOCO": (4500, 1800000, "Auto"),
+    "BALKRISIND": (2800, 800000, "Auto"),
+    "BATAINDIA": (1380, 1500000, "Auto"),
+    # Pharma
+    "SUNPHARMA": (1780, 5500000, "Pharma"),
+    "DRREDDY": (1250, 2000000, "Pharma"),
+    "CIPLA": (1480, 3500000, "Pharma"),
+    "DIVISLAB": (4200, 1500000, "Pharma"),
+    "BIOCON": (340, 6000000, "Pharma"),
+    "LUPIN": (2100, 3000000, "Pharma"),
+    "AUROPHARMA": (1250, 4000000, "Pharma"),
+    "TORNTPHARM": (3200, 800000, "Pharma"),
+    "ALKEM": (5200, 500000, "Pharma"),
+    "GLENMARK": (1520, 2000000, "Pharma"),
+    # Healthcare
+    "APOLLOHOSP": (6800, 1200000, "Healthcare"),
+    "MAXHEALTH": (920, 2500000, "Healthcare"),
+    "FORTIS": (580, 3500000, "Healthcare"),
+    # Financial Services
+    "BAJFINANCE": (6800, 4000000, "Financial Services"),
+    "BAJFINSV": (1620, 1800000, "Financial Services"),
+    "SBILIFE": (1650, 3000000, "Financial Services"),
+    "HDFCLIFE": (680, 5000000, "Financial Services"),
+    "ICICIPRULI": (680, 4000000, "Financial Services"),
+    "BAJAJHLDNG": (8500, 200000, "Financial Services"),
+    "MUTHOOTFIN": (1950, 2000000, "Financial Services"),
+    "CHOLAFIN": (1350, 3000000, "Financial Services"),
+    "SHRIRAMFIN": (2800, 2000000, "Financial Services"),
+    "LICI": (920, 8000000, "Financial Services"),
+    "JIOFIN": (340, 12000000, "Financial Services"),
+    # Metals & Mining
+    "TATASTEEL": (145, 30000000, "Metals & Mining"),
+    "JSWSTEEL": (890, 8000000, "Metals & Mining"),
+    "VEDL": (440, 18000000, "Metals & Mining"),
+    "HINDALCO": (620, 12000000, "Metals & Mining"),
+    "SAIL": (118, 22000000, "Metals & Mining"),
+    "NMDC": (225, 10000000, "Metals & Mining"),
+    "COALINDIA": (480, 15000000, "Metals & Mining"),
+    # Infrastructure & Construction
+    "LT": (3520, 3000000, "Infrastructure"),
+    "ADANIENT": (2450, 10000000, "Infrastructure"),
+    "ADANIPORTS": (1350, 7000000, "Infrastructure"),
+    "GRASIM": (2650, 2200000, "Infrastructure"),
+    "ULTRACEMCO": (11200, 800000, "Infrastructure"),
+    "CONCOR": (780, 5000000, "Infrastructure"),
+    "ASTRAL": (1950, 1200000, "Infrastructure"),
+    "SUPREMEIND": (5200, 400000, "Infrastructure"),
+    "APLAPOLLO": (1650, 800000, "Infrastructure"),
+    # Power & Energy
+    "POWERGRID": (310, 16000000, "Power"),
+    "NTPC": (365, 20000000, "Power"),
+    "TATAPOWER": (420, 20000000, "Power"),
+    "RECLTD": (520, 8000000, "Power"),
+    "PFC": (430, 9000000, "Power"),
+    "IRFC": (165, 25000000, "Power"),
+    # Consumer Durables
+    "TITAN": (3450, 2800000, "Consumer Durables"),
+    "ASIANPAINT": (2800, 2500000, "Consumer Durables"),
+    "PIDILITIND": (2900, 1500000, "Consumer Durables"),
+    "HAVELLS": (1650, 2500000, "Consumer Durables"),
+    "VOLTAS": (1750, 2000000, "Consumer Durables"),
+    "CROMPTON": (380, 5000000, "Consumer Durables"),
+    "WHIRLPOOL": (1350, 800000, "Consumer Durables"),
+    "PAGEIND": (42000, 100000, "Consumer Durables"),
+    "RELAXO": (780, 1200000, "Consumer Durables"),
+    "RAYMOND": (1650, 1500000, "Consumer Durables"),
+    "POLYCAB": (6800, 700000, "Consumer Durables"),
+    "DIXON": (14500, 400000, "Consumer Durables"),
+    # Capital Goods
+    "SIEMENS": (7200, 500000, "Capital Goods"),
+    "ABB": (7800, 600000, "Capital Goods"),
+    "CUMMINSIND": (3200, 600000, "Capital Goods"),
+    "THERMAX": (4800, 300000, "Capital Goods"),
+    "BHEL": (245, 20000000, "Capital Goods"),
+    # Defence
+    "HAL": (4200, 3000000, "Defence"),
+    "BEL": (285, 15000000, "Defence"),
+    "COCHINSHIP": (1800, 3000000, "Defence"),
+    "MAZAGONDOCK": (4200, 1500000, "Defence"),
+    "GRSE": (1650, 2000000, "Defence"),
+    "GARDENREACH": (1250, 1200000, "Defence"),
+    # Chemicals
+    "PIIND": (3800, 800000, "Chemicals"),
+    "UPL": (520, 6000000, "Chemicals"),
+    "SRF": (2450, 1200000, "Chemicals"),
+    "ATUL": (6500, 300000, "Chemicals"),
+    "DEEPAKNTR": (2200, 1500000, "Chemicals"),
+    "NAVINFLUOR": (3500, 600000, "Chemicals"),
+    "TATACHEM": (1080, 3000000, "Chemicals"),
+    # Realty
+    "DLF": (850, 8000000, "Realty"),
+    "GODREJPROP": (2800, 1200000, "Realty"),
+    "OBEROIRLTY": (1950, 800000, "Realty"),
+    "PHOENIXLTD": (1650, 600000, "Realty"),
+    "PRESTIGE": (1800, 1000000, "Realty"),
+    # Media & Entertainment
+    "SUNTV": (680, 3000000, "Media"),
+    "ZEEL": (135, 12000000, "Media"),
+    "PVR": (1450, 1500000, "Media"),
+    # Retail & E-commerce
+    "TRENT": (6500, 3000000, "Retail"),
+    "DMART": (3800, 1500000, "Retail"),
+    "ZOMATO": (245, 35000000, "Retail"),
+    "PAYTM": (850, 12000000, "Retail"),
+    "NYKAA": (175, 8000000, "Retail"),
+    # Travel & Transport
+    "INDIGO": (4500, 3000000, "Travel"),
+    "IRCTC": (880, 5000000, "Travel"),
+    # Electronics
+    "KAYNES": (5500, 500000, "Electronics"),
 }
 
 # Nifty indices with base values and volumes
@@ -182,25 +202,31 @@ def _symbol_seed(symbol: str) -> int:
 
 def _get_base_price_and_volume(symbol: str) -> tuple[float, int]:
     """Get base price and volume for any NSE symbol."""
-    # Strip NSE: prefix
     ticker = symbol.replace("NSE:", "")
 
-    # Check known stocks
     if ticker in _KNOWN_STOCKS:
-        return _KNOWN_STOCKS[ticker]
+        price, vol, _sector = _KNOWN_STOCKS[ticker]
+        return (price, vol)
 
-    # Check known indices
     if ticker in _KNOWN_INDICES:
         return _KNOWN_INDICES[ticker]
 
     # For unknown symbols, generate a plausible base price from the name hash
     seed = _symbol_seed(ticker)
     rng = random.Random(seed)
-    # Most NSE stocks are between Rs 50 and Rs 5000
-    base_price = rng.uniform(80, 4000)
-    base_price = round(base_price, 2)
+    base_price = round(rng.uniform(80, 4000), 2)
     base_volume = rng.randint(500000, 15000000)
     return (base_price, base_volume)
+
+
+def get_sector(symbol: str) -> str:
+    """Get sector for a given NSE symbol."""
+    ticker = symbol.replace("NSE:", "")
+    if ticker in _KNOWN_STOCKS:
+        return _KNOWN_STOCKS[ticker][2]
+    if ticker in _KNOWN_INDICES:
+        return "Index"
+    return "Other"
 
 
 def _generate_ohlcv_series(symbol: str, num_days: int) -> list[tuple[float, float, float, float, int]]:
@@ -279,13 +305,14 @@ def get_sample_candles(symbol: str, from_date: str, to_date: str) -> pd.DataFram
 
 # All searchable instruments
 _ALL_INSTRUMENTS = []
-for _ticker, (_price, _vol) in _KNOWN_STOCKS.items():
+for _ticker, (_price, _vol, _sector) in _KNOWN_STOCKS.items():
     _ALL_INSTRUMENTS.append({
         "instrument_token": str(_symbol_seed(_ticker) % 100000),
         "tradingsymbol": _ticker,
         "name": _ticker.replace("&", " and "),
         "exchange": "NSE",
         "instrument_type": "EQUITY",
+        "sector": _sector,
         "source": "sample",
     })
 for _ticker, (_price, _vol) in _KNOWN_INDICES.items():
@@ -295,6 +322,7 @@ for _ticker, (_price, _vol) in _KNOWN_INDICES.items():
         "name": _ticker,
         "exchange": "NSE",
         "instrument_type": "INDEX",
+        "sector": "Index",
         "source": "sample",
     })
 

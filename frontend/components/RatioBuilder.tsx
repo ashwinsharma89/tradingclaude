@@ -123,6 +123,9 @@ function AssetPicker({ label, asset, onSelect, popular }: AssetPickerProps) {
                       {r.name !== r.tradingsymbol ? r.name : ""}
                     </span>
                     <span className="text-text-muted text-[10px] float-right">
+                      {r.sector && r.sector !== "Other" && (
+                        <span className="text-accent-blue mr-1">{r.sector}</span>
+                      )}
                       {r.exchange}
                     </span>
                   </button>
