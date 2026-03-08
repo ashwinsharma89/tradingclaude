@@ -52,19 +52,31 @@ def _map_interval(interval: str) -> str:
     return mapping.get(interval, interval)
 
 
+# Map Twelve Data interval names to the values stored in market_data.db
+_DB_INTERVAL_ALIASES = {
+    "1day": ["1day", "day", "daily", "1D"],
+    "1week": ["1week", "week", "weekly", "1W"],
+    "1month": ["1month", "month", "monthly", "1M"],
+}
+
+
 async def _query_local_db(symbol: str, interval: str, outputsize: int) -> pd.DataFrame:
     """Try to load data from the local market_data.db file."""
     if not os.path.exists(MARKET_DATA_DB):
         return pd.DataFrame()
 
+    # Build list of interval aliases to try
+    aliases = _DB_INTERVAL_ALIASES.get(interval, [interval])
+    placeholders = ",".join("?" for _ in aliases)
+
     try:
         async with aiosqlite.connect(MARKET_DATA_DB) as db:
             db.row_factory = aiosqlite.Row
             cursor = await db.execute(
-                "SELECT date, open, high, low, close, volume FROM market_data "
-                "WHERE symbol = ? AND interval = ? "
-                "ORDER BY date DESC LIMIT ?",
-                (symbol, interval, outputsize),
+                f"SELECT date, open, high, low, close, volume FROM market_data "
+                f"WHERE symbol = ? AND interval IN ({placeholders}) "
+                f"ORDER BY date DESC LIMIT ?",
+                (symbol, *aliases, outputsize),
             )
             rows = await cursor.fetchall()
 
